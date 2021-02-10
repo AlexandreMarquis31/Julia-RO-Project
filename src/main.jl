@@ -27,6 +27,7 @@ train, test = createFeatures(dataFolder, dataSet)
 # - save the rules in ./res/kidney_rules.csv
 #
 # Warning: this step is skipped if file kidney_rules.csv already exists
+"""
 rules = createRules(dataSet, resultsFolder, train)
 
 # Order the rules (limit the resolution to 300 seconds)
@@ -43,3 +44,4 @@ showStatistics(orderedRules, train)
 
 println("-- Test results")
 showStatistics(orderedRules, test)
+"""
