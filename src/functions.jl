@@ -121,8 +121,8 @@ function createFeatures(dataFolder::String, dataSet::String)
 
             #workclass
             features.workclass_private = ifelse.(rawData.workclass .== "Private", 1, 0)
-            features.workclass_public = ifelse.(rawData.workclass .== "Local-gov", 1,0) + ifelse.(rawData.workclass .== "State-gov", 1, 0) + ifelse.(rawData.workclass .== "Federal-gov", 1, 0)
-            features.workclass_other = ifelse.( ifelse.(rawData.workclass .== "Private",1 ,0) + ifelse.(rawData.workclass .== "Local-gov", 1, 0) + ifelse.(rawData.workclass .== "State-gov", 1, 0) + ifelse.(rawData.workclass .== "Federal-gov", 1, 0) .== 0, 1, 0)
+            features.workclass_public = ifelse.(occursin.("gov", rawData.workclass), 1,0)
+            features.workclass_other = ifelse.(features.workclass_private .+ features.workclass_public .== 0, 1, 0)
 
             #educ num
             createColumns(:education_num,  [0, 8, 13, 14, Inf], rawData, features)
@@ -130,12 +130,12 @@ function createFeatures(dataFolder::String, dataSet::String)
             #marital status
             features.marital_status_maried = ifelse.(rawData.marital_status .== "Married-civ-spouse", 1, 0)
             features.marital_status_never_maried = ifelse.(rawData.marital_status .== "Never-Maried", 1, 0)
-            features.marital_status_never_other = ifelse.( ifelse.(rawData.marital_status .== "Never-Maried", 1, 0) + ifelse.(rawData.marital_status .== "Married-civ-spouse", 1, 0) .== 0, 1, 0)
+            features.marital_status_never_other = ifelse.(features.marital_status_maried .+ features.marital_status_never_maried .== 0, 1, 0)
 
             #occupation
-            features.occupation_high = ifelse.(rawData.occupation .== "Prof-specialty", 1, 0) + ifelse.(rawData.occupation .== "Exec-managerial", 1, 0)
-            features.occupation_commun = ifelse.(rawData.occupation .== "Sales", 1, 0) + ifelse.(rawData.occupation .== "Tech-support", 1, 0)
-            features.occupation_other = ifelse.(ifelse.(rawData.occupation .== "Prof-specialty", 1, 0) + ifelse.(rawData.occupation .== "Exec-managerial", 1, 0) + ifelse.(rawData.occupation .== "Sales", 1, 0) + ifelse.(rawData.occupation .== "Tech-support", 1, 0) .==0, 1, 0)
+            features.occupation_high = ifelse.(in(["Prof-specialty", "Exec-managerial"]).(rawData.occupation), 1, 0)
+            features.occupation_commun = ifelse.(in(["Sales", "Tech-support"]).(rawData.occupation), 1, 0)
+            features.occupation_other = ifelse.(features.occupation_high .+ features.occupation_commun .== 0, 1, 0)
 
             #race
             features.race_is_white = ifelse.(rawData.race .== "White", 1, 0)
