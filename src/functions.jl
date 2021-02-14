@@ -225,7 +225,7 @@ function createRules(dataSet::String, resultsFolder::String, train::DataFrames.D
         iterlim::Int64 = 5
         RgenX::Float64 = 0.1 / n
         RgenB::Float64 = 0.1 / (n * d)
-        
+
         ##################
         # Find the rules for each class
         ##################
@@ -234,6 +234,46 @@ function createRules(dataSet::String, resultsFolder::String, train::DataFrames.D
             println("-- Classe $y")
 
             # TODO
+            s, iter , cmax = 0, 1, n
+            println(n * mincovy)
+            m = Model(CPLEX.Optimizer)
+            set_silent(m)
+            @variable(m, b[j in 1:d], Bin)
+            @variable(m, 0 <= x[i in 1:n] <= 1)
+
+            @constraint(m, con[i = 1:n, j = 1:d], x[i] <= 1 + (t[i,j] - 1)*b[j])
+            @constraint(m, con2[i = 1:n], x[i] >= 1 + sum((t[i,j] - 1)*b[j] for j in 1:d))
+            @constraint(m, sum(x[i] for i in 1:n) <= cmax)
+
+            @objective(m, Max, sum(transactionClass[i, 1] == y ? x[i] : 0 for i in 1:n) - RgenX * sum(x[i] for i in 1:n) - RgenB * sum(b[j] for j in 1:d))
+            while true
+                if iter == 1
+                    optimize!(m)
+                    x_star = JuMP.value.(x)
+                    s = sum(transactionClass[i, 1] == y ? x_star[i] : 0 for i in 1:n)
+                    iter += 1
+                end
+                b_star = JuMP.value.(b)
+                rule = DataFrame(hcat(append!([y], trunc.(Int, b_star))...), :auto)
+                append!(rules, rule)
+                @constraint(m, sum(b_star[j] == 0 ? b[j] : 0  for j in 1:d) + sum(b_star[j] == 1 ? (1 - b[j]) : 0 for j in 1:d) >= 1)
+                if iter < iterlim
+                    optimize!(m)
+                    x_star = JuMP.value.(x)
+                    sTemp = sum(transactionClass[i, 1] == y ? x_star[i] != 0 : 0 for i in 1:n)
+                    if sTemp < s
+                        cmax = min(cmax - 1, sum(x_star[i]  for i in 1:n))
+                        iter = 1
+                    else
+                        iter += 1
+                    end
+                else
+                    cmax -= 1
+                    iter = 1
+                end
+                println(cmax)
+                (cmax >= n * mincovy) || break
+            end
 
             ## Hint 1 
             # Each time you solve the model for a class y, the value of variable b represents a rule.
@@ -501,4 +541,4 @@ function showStatistics(orderedRules::DataFrames.DataFrame, dataSet::DataFrames.
     println("avg\t", round((precision[1] + precision[2])/2, digits=2), "\t", round((recall[1] + recall[2])/2, digits=2))
     println("w. avg\t", round(precision[1] * classSize[1] / size(dataSet, 1) + precision[2] * classSize[2] / size(dataSet, 1), digits = 2), "\t", round(recall[1] * classSize[1] / size(dataSet, 1) + recall[2] * classSize[2] / size(dataSet, 1), digits = 2), "\n")
     
-end 
+end
