@@ -7,7 +7,7 @@ using Random
 include("functions.jl")
 
 # Set to "titanic" to consider the corresponding dataset
-dataSet = "titanic"
+dataSet = "adult"
 dataFolder = "../data/"
 resultsFolder = "../res/"
 
@@ -36,7 +36,7 @@ rules = createRules(dataSet, resultsFolder, train)
 # - save the rules in ./res/kidney_ordered_rules.csv
 #
 # Warning: this step is skipped if file kidney_ordered_rules.csv already exists
-timeLimitInSeconds = 3000
+timeLimitInSeconds = 4000
 orderedRules = sortRules(dataSet, resultsFolder, train, rules, timeLimitInSeconds)
 
 println("-- Train results")

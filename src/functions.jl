@@ -117,20 +117,20 @@ function createFeatures(dataFolder::String, dataSet::String)
 
             # TODO
             #age
-            createColumns(:age, [0, 20, 30, 40, 50, 60, Inf], rawData, features)
+            createColumns(:age, [0, 25, 40, Inf], rawData, features)
 
             #workclass
-            features.workclass_private = ifelse.(rawData.workclass .== "Private", 1, 0)
-            features.workclass_public = ifelse.(occursin.("gov", rawData.workclass), 1,0)
-            features.workclass_other = ifelse.(features.workclass_private .+ features.workclass_public .== 0, 1, 0)
+            #features.workclass_private = ifelse.(rawData.workclass .== "Private", 1, 0)
+            #features.workclass_public = ifelse.(occursin.("gov", rawData.workclass), 1,0)
+            #features.workclass_other = ifelse.(features.workclass_private .+ features.workclass_public .== 0, 1, 0)
 
             #educ num
-            createColumns(:education_num,  [0, 8, 13, 14, Inf], rawData, features)
+            createColumns(:education_num,  [0, 8, 13, Inf], rawData, features)
 
             #marital status
-            features.marital_status_maried = ifelse.(rawData.marital_status .== "Married-civ-spouse", 1, 0)
-            features.marital_status_never_maried = ifelse.(rawData.marital_status .== "Never-Maried", 1, 0)
-            features.marital_status_never_other = ifelse.(features.marital_status_maried .+ features.marital_status_never_maried .== 0, 1, 0)
+            #features.marital_status_maried = ifelse.(rawData.marital_status .== "Married-civ-spouse", 1, 0)
+            #features.marital_status_never_maried = ifelse.(rawData.marital_status .== "Never-Maried", 1, 0)
+            #features.marital_status_never_other = ifelse.(features.marital_status_maried .+ features.marital_status_never_maried .== 0, 1, 0)
 
             #occupation
             features.occupation_high = ifelse.(in(["Prof-specialty", "Exec-managerial"]).(rawData.occupation), 1, 0)
@@ -141,16 +141,16 @@ function createFeatures(dataFolder::String, dataSet::String)
             features.race_is_white = ifelse.(rawData.race .== "White", 1, 0)
 
             #sex
-            features.sex_is_male = ifelse.(rawData.race .== "Male", 1, 0)
+            features.sex_is_male = ifelse.(rawData.sex .== "Male", 1, 0)
 
             #capital gain
-            features.cap_gain_is_null = ifelse.(rawData.race .== 0, 1, 0)
+            features.cap_gain_is_null = ifelse.(rawData.capital_gain .== 0, 1, 0)
 
             #capital loss
             features.cap_loss_is_null = ifelse.(rawData.capital_loss .== 0, 1, 0)
 
             #hours
-            createColumns(:hours_per_week,  [0, 30, 50, Inf], rawData, features)
+            createColumns(:hours_per_week,  [0, 40, Inf], rawData, features)
 
         end
 
@@ -221,7 +221,7 @@ function createRules(dataSet::String, resultsFolder::String, train::DataFrames.D
         # Number of transactions
         n::Int64 = size(t, 1)
 
-        mincovy::Float64 = 0.05
+        mincovy::Float64 = 0.05 #0.05
         iterlim::Int64 = 5
         RgenX::Float64 = 0.1 / n
         RgenB::Float64 = 0.1 / (n * d)
@@ -234,6 +234,7 @@ function createRules(dataSet::String, resultsFolder::String, train::DataFrames.D
             println("-- Classe $y")
 
             # TODO
+            x_star = 0
             s, iter , cmax = 0, 1, n
             println(n * mincovy)
             m = Model(CPLEX.Optimizer)
@@ -259,10 +260,10 @@ function createRules(dataSet::String, resultsFolder::String, train::DataFrames.D
                 @constraint(m, sum(b_star[j] == 0 ? b[j] : 0  for j in 1:d) + sum(b_star[j] == 1 ? (1 - b[j]) : 0 for j in 1:d) >= 1)
                 if iter < iterlim
                     optimize!(m)
-                    x_star = JuMP.value.(x)
-                    sTemp = sum(transactionClass[i, 1] == y ? x_star[i] != 0 : 0 for i in 1:n)
-                    if sTemp < s
-                        cmax = min(cmax - 1, sum(x_star[i]  for i in 1:n))
+                    x_star_temp = JuMP.value.(x)
+                    #sTemp = sum(transactionClass[i, 1] == y ? x_star[i] : 0 for i in 1:n)
+                    if x_star < x_star_temp
+                        cmax = min(cmax - 1, sum(x_star_temp[i]  for i in 1:n))
                         iter = 1
                     else
                         iter += 1
