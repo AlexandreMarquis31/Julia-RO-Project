@@ -221,7 +221,7 @@ function createRules(dataSet::String, resultsFolder::String, train::DataFrames.D
         # Number of transactions
         n::Int64 = size(t, 1)
 
-        mincovy::Float64 = 0.05 #0.05
+        mincovy::Float64 = 0.3 #0.05
         iterlim::Int64 = 5
         RgenX::Float64 = 0.1 / n
         RgenB::Float64 = 0.1 / (n * d)
