@@ -36,7 +36,7 @@ rules = createRules(dataSet, resultsFolder, train)
 # - save the rules in ./res/kidney_ordered_rules.csv
 #
 # Warning: this step is skipped if file kidney_ordered_rules.csv already exists
-timeLimitInSeconds = 4000
+timeLimitInSeconds = 6000
 orderedRules = sortRules(dataSet, resultsFolder, train, rules, timeLimitInSeconds)
 
 println("-- Train results")

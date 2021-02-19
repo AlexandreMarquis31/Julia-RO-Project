@@ -117,7 +117,7 @@ function createFeatures(dataFolder::String, dataSet::String)
 
             # TODO
             #age
-            createColumns(:age, [0, 25, 40, Inf], rawData, features)
+            createColumns(:age, [0, 35, Inf], rawData, features)
 
             #workclass
             #features.workclass_private = ifelse.(rawData.workclass .== "Private", 1, 0)
@@ -125,7 +125,7 @@ function createFeatures(dataFolder::String, dataSet::String)
             #features.workclass_other = ifelse.(features.workclass_private .+ features.workclass_public .== 0, 1, 0)
 
             #educ num
-            createColumns(:education_num,  [0, 8, 13, Inf], rawData, features)
+            createColumns(:education_num,  [0, 11, Inf], rawData, features)
 
             #marital status
             #features.marital_status_maried = ifelse.(rawData.marital_status .== "Married-civ-spouse", 1, 0)
@@ -138,10 +138,10 @@ function createFeatures(dataFolder::String, dataSet::String)
             features.occupation_other = ifelse.(features.occupation_high .+ features.occupation_commun .== 0, 1, 0)
 
             #race
-            features.race_is_white = ifelse.(rawData.race .== "White", 1, 0)
+            #features.race_is_white = ifelse.(rawData.race .== "White", 1, 0)
 
             #sex
-            features.sex_is_male = ifelse.(rawData.sex .== "Male", 1, 0)
+            #features.sex_is_male = ifelse.(rawData.sex .== "Male", 1, 0)
 
             #capital gain
             features.cap_gain_is_null = ifelse.(rawData.capital_gain .== 0, 1, 0)
@@ -222,7 +222,7 @@ function createRules(dataSet::String, resultsFolder::String, train::DataFrames.D
         n::Int64 = size(t, 1)
 
         mincovy::Float64 = 0.3 #0.05
-        iterlim::Int64 = 5
+        iterlim::Int64 = 7
         RgenX::Float64 = 0.1 / n
         RgenB::Float64 = 0.1 / (n * d)
 
@@ -261,8 +261,8 @@ function createRules(dataSet::String, resultsFolder::String, train::DataFrames.D
                 if iter < iterlim
                     optimize!(m)
                     x_star_temp = JuMP.value.(x)
-                    #sTemp = sum(transactionClass[i, 1] == y ? x_star[i] : 0 for i in 1:n)
-                    if x_star < x_star_temp
+                    sTemp = sum(transactionClass[i, 1] == y ? x_star_temp[i] : 0 for i in 1:n)
+                    if sTemp < s
                         cmax = min(cmax - 1, sum(x_star_temp[i]  for i in 1:n))
                         iter = 1
                     else
